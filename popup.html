@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Caption Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 350px;
+            min-height: 400px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .video-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .video-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .video-url {
+            font-size: 11px;
+            opacity: 0.7;
+            word-break: break-all;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .platform-select {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .platform-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .platform-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .platform-btn.active {
+            background: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .generate-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .generate-btn:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .result textarea {
+            width: 100%;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 13px;
+            resize: none;
+            outline: none;
+        }
+
+        .result textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ffcccb;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .api-key-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .api-key-section input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .api-key-section input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .api-key-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .debug-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 11px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Caption Generator</h1>
+            <p>Turn YouTube videos into social media gold</p>
+        </div>
+
+        <div class="api-key-section">
+            <label for="apiKey">OpenAI API Key:</label>
+            <input type="password" id="apiKey" placeholder="sk-..." />
+        </div>
+
+        <div class="video-info" id="videoInfo">
+            <div class="video-title" id="videoTitle">No YouTube video detected</div>
+            <div class="video-url" id="videoUrl">Navigate to a YouTube video to get started</div>
+        </div>
+
+        <div class="controls">
+            <div class="platform-select">
+                <button class="platform-btn active" data-platform="instagram">📸 Instagram</button>
+                <button class="platform-btn" data-platform="twitter">🐦 Twitter</button>
+                <button class="platform-btn" data-platform="linkedin">💼 LinkedIn</button>
+                <button class="platform-btn" data-platform="tiktok">🎵 TikTok</button>
+            </div>
+
+            <button class="generate-btn" id="generateBtn">
+                ✨ Generate Caption
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Generating your caption...</p>
+        </div>
+
+        <div class="result" id="result">
+            <textarea id="captionText" placeholder="Your generated caption will appear here..."></textarea>
+            <button class="copy-btn" id="copyBtn">📋 Copy Caption</button>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="debug-info" id="debugInfo"></div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
